@@ -94,7 +94,7 @@
             display: flex;
             gap: 2rem;
             align-items: center;
-            transition: all 0.3s ease;
+            transition: right 0.3s ease;
         }
 
         .nav-links a {
@@ -510,7 +510,6 @@
                 flex-direction: column;
                 justify-content: center;
                 padding: 2rem;
-                transition: right 0.3s ease;
                 z-index: 1000;
                 border-left: 1px solid var(--border);
             }
@@ -844,7 +843,7 @@
             currentPage: 'login',
             user: null,
             products: document.querySelectorAll('.product-card'),
-            telegramLink: 'https://t.me/joan_ssky', // Change this to your actual Telegram link
+            telegramLink: 'https://t.me/joan_ssky',
             menuOpen: false
         };
 
@@ -891,15 +890,18 @@
             loginForm.addEventListener('submit', handleLogin);
             registerForm.addEventListener('submit', handleRegister);
             
-            // Mobile menu toggle
-            menuToggle.addEventListener('click', toggleMenu);
+            // Mobile menu toggle - optimized with stopPropagation
+            menuToggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                toggleMenu();
+            });
             
             // Close menu when clicking outside on mobile
-            document.addEventListener('click', (e) => {
+            document.addEventListener('click', function(e) {
                 if (appState.menuOpen && 
+                    window.innerWidth <= 768 && 
                     !navLinksContainer.contains(e.target) && 
-                    !menuToggle.contains(e.target) &&
-                    window.innerWidth <= 768) {
+                    !menuToggle.contains(e.target)) {
                     closeMenu();
                 }
             });
@@ -910,9 +912,16 @@
                     closeMenu();
                 }
             });
+
+            // Close menu on window resize to larger screens
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 768 && appState.menuOpen) {
+                    closeMenu();
+                }
+            });
         }
 
-        // Mobile Menu Functions
+        // Mobile Menu Functions - Optimized
         function toggleMenu() {
             if (appState.menuOpen) {
                 closeMenu();
@@ -924,7 +933,13 @@
         function openMenu() {
             navLinksContainer.classList.add('active');
             menuToggle.innerHTML = '<i class="fas fa-times"></i>';
-            appState.menuOpen = true;
+            menuToggle.style.pointerEvents = 'none';
+            
+            // Small delay to ensure animation starts
+            setTimeout(() => {
+                appState.menuOpen = true;
+                menuToggle.style.pointerEvents = 'auto';
+            }, 10);
         }
 
         function closeMenu() {
